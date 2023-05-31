@@ -7,7 +7,7 @@ const tokens = (n) => {
 
 const ether = tokens
 
-describe('Token', () => {
+describe('NFT', () => {
   let token, accounts, deployer, receiver, exchange
 
   beforeEach(async () => {
