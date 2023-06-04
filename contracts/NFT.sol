@@ -12,6 +12,9 @@ contract NFT is ERC721Enumerable, Ownable {
     uint256 public cost;
     uint256 public maxSupply;
     uint256 public allowMintingOn;
+    uint8 public maxMint;
+    bool public isPaused = false;
+    mapping(address => bool) public whitelist;
 
     event Mint(uint256 amount, address minter);
     event Withdraw(uint256 amount, address owner);
@@ -22,18 +25,26 @@ contract NFT is ERC721Enumerable, Ownable {
         uint256 _cost,
         uint256 _maxSupply,
         uint256 _allowMintingOn,
-        string memory _baseURI
+        string memory _baseURI,
+        uint8 _maxMint
     ) ERC721 (_name, _symbol) {
         cost = _cost;
         maxSupply = _maxSupply;
         allowMintingOn = _allowMintingOn;
         baseURI = _baseURI;
+        maxMint = _maxMint;
     }
 
     function mint(uint256 _mintAmount) public payable {
+        require(!isPaused, 'Minting is paused');
+
         require(block.timestamp >= allowMintingOn, 'Minting not yet allowed');
 
+        require(whitelist[msg.sender], 'Address not whitelisted');
+
         require(_mintAmount > 0, 'Must mint at least 1 NFT');
+
+        require(_mintAmount <= maxMint, 'Cannot mint that many NFTs');
 
         require(msg.value >= cost * _mintAmount, 'Insufficient ether sent');
 
@@ -73,7 +84,15 @@ contract NFT is ERC721Enumerable, Ownable {
         emit Withdraw(balance, msg.sender);
     }
 
+    function addToWhitelist(address _address) public onlyOwner {
+        whitelist[_address] = true;
+    }
+
     function setCost(uint256 _newCost) public onlyOwner {
         cost = _newCost;
+    }
+
+    function pauseMint(bool _isPaused) public onlyOwner {
+        isPaused = _isPaused;
     }
 }
