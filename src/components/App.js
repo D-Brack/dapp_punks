@@ -10,6 +10,9 @@ import Navigation from './Navigation'
 import Loading from './Loading'
 import Data from './Data'
 import Mint from './Mint'
+import Whitelist from './Whitelist'
+import Pause from './Pause'
+import Wallet from './Wallet'
 
 // ABIs: Import your contract ABIs here
 import NFT_ABI from '../abis/NFT.json'
@@ -29,6 +32,9 @@ function App() {
   const [revealTime, setRevealTime] = useState(0)
   const [baseURI, setBaseURI] = useState('')
   const [isWhitelisted, setIsWhitelisted] = useState(false)
+  const [isOwner, setIsOwner] = useState(false)
+  const [nftCollection, setNFTCollection] = useState(null)
+  const [isPaused, setIsPaused] = useState(false)
 
   const [isLoading, setIsLoading] = useState(true)
 
@@ -49,6 +55,9 @@ function App() {
 
     const isWhitelisted = await nft.whitelist(account)
     setIsWhitelisted(isWhitelisted)
+
+    const owner = await nft.owner()
+    setIsOwner(account === owner)
 
     // Fetch minting cost
     const cost = await nft.cost()
@@ -73,6 +82,20 @@ function App() {
     // Fetch base URI
     const baseURI = await nft.baseURI()
     setBaseURI(baseURI)
+
+    // Fetch paused status
+    const isPaused = await nft.isPaused()
+    setIsPaused(isPaused)
+
+    // Fetch current account's NFT collection
+    const wallet = await nft.walletOfOwner(account)
+    let nftCollection = []
+
+    for (let i = 0; i < wallet.length; i++) {
+      nftCollection.push(`https://gateway.pinata.cloud/ipfs/${baseURI.slice(7)}${wallet[i]}`)
+    }
+
+    setNFTCollection(nftCollection)
 
     setIsLoading(false)
   }
@@ -103,9 +126,9 @@ function App() {
               {balance > 0 ? (
                 <div className='text-center'>
                   <img
-                    src={`https://gateway.pinata.cloud/ipfs/${baseURI.slice(7)}${balance.toString()}.png`}
+                    src={`${nftCollection[nftCollection.length - 1]}.png`}
                     alt='open punk'
-                    style={{ width: '400px', height: '400px'}}
+                    style={{ width: '400px', height: '400px' }}
                   />
                 </div>
               ) : (
@@ -119,9 +142,17 @@ function App() {
               </div>
 
               <Data maxSupply={maxSupply} totalSupply={totalSupply} cost={cost} balance={balance} />
-              <Mint provider={provider} nft={nft} cost={cost} setIsLoading={setIsLoading} isWhitelisted={isWhitelisted} />
+              <Mint provider={provider} nft={nft} cost={cost} setIsLoading={setIsLoading} isWhitelisted={isWhitelisted} isPaused={isPaused} />
+              <Wallet nftCollection={nftCollection} />
             </Col>
           </Row>
+          {isOwner && (
+            <div>
+              <hr />
+              <Whitelist provider={provider} nft={nft} setIsLoading={setIsLoading} />
+              <Pause provider={provider} nft={nft} setIsLoading={setIsLoading} isPaused={isPaused} setIsPaused={setIsPaused} />
+            </div>
+          )}
         </>
       )}
     </Container>
