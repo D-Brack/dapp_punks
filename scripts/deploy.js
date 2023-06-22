@@ -15,7 +15,6 @@ async function main() {
   const BASE_URI = 'ipfs://QmQPEMsfd1tJnqYPbnTQCjoa8vczfsV1FmqZWgRdNQ7z3g/'
   const MAX_MINT = 5
 
-  // Deploy NFT
   const NFT = await hre.ethers.getContractFactory('NFT')
   let nft = await NFT.deploy(NAME, SYMBOL, COST, MAX_SUPPLY, NFT_MINT_DATE, BASE_URI, MAX_MINT)
 

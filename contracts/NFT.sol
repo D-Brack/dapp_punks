@@ -59,7 +59,13 @@ contract NFT is ERC721Enumerable, Ownable {
         emit Mint(_mintAmount, msg.sender);
     }
 
-    function tokenURI(uint256 _tokenId) public view virtual override returns(string memory) {
+    function tokenURI(uint256 _tokenId)
+        public
+        view
+        virtual
+        override
+        returns(string memory)
+    {
         require(_exists(_tokenId), 'Token does not exist');
         return string(abi.encodePacked(baseURI, _tokenId.toString(), baseExtension));
     }
@@ -89,6 +95,7 @@ contract NFT is ERC721Enumerable, Ownable {
     }
 
     function setCost(uint256 _newCost) public onlyOwner {
+        require(_newCost > 0, 'New cost must be above 0');
         cost = _newCost;
     }
 

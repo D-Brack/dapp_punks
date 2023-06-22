@@ -358,6 +358,10 @@ describe('NFT', () => {
         await expect(nft.connect(minter).setCost(ether(100))).to.be.reverted
       })
 
+      it('prevents setting new cost of 0', async () => {
+        await expect(nft.connect(deployer).setCost(0)).to.be.reverted
+      })
+
       it('prevents non-owner from pausing minting', async() => {
         const ALLOW_MINTING_ON = Date.now().toString().slice(0, 10)
         const NFT = await ethers.getContractFactory('NFT')
